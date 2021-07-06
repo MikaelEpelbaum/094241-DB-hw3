@@ -1,0 +1,23 @@
+create view mostPopular as (
+select artistName from (
+select top 1  artistName, count(artistName) cnt
+from (
+select distinct iTunes.artistName, iTunes.albumName
+from iTunes) as assos
+group by artistName
+order by cnt desc) as pop
+)
+
+CREATE VIEW mostPopularArtistSongWithConditions AS(
+            SELECT exter.songName, exter.albumName, (select year (exter.releasedDate)) as releasedYear
+    FROM iTunes exter,
+    (SELECT inter.genre, inter.year, inter.duration, count(inter.duration) as cnt
+    FROM (SELECT songName, artistName, albumName, genre, (select year (releasedDate)) as year, price, duration from iTunes) as inter
+    group by inter.genre, inter.duration, inter.year) as histo
+    WHERE
+    exter.genre = histo.genre
+    AND (select year (exter.releasedDate)) = histo.year
+    AND exter.duration = histo.duration
+    AND histo.cnt = 1
+    AND exter.artistName = (select TOP 1 artistName from mostPopular)
+)
